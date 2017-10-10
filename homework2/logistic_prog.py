@@ -29,7 +29,31 @@ def logistic_train_ovr(Xtrain, ytrain, w, b, step_size, max_iterations):
     To help you verify your results, we have provided a function named logistic_train_bin in this file, it serves for the purpose of training a binary logistic regression model.
     '''
 
+    Xtrain = numpy.asarray(Xtrain)
+    ytrain = numpy.asarray(ytrain)
+    b = 0.0
+    w = numpy.array([0.0] * Xtrain.shape[1])
+    for j in range(0,max_iterations):
+        sum_grad_bias = 0.0
+        sum_grad_coeff = numpy.array([0.0] * Xtrain.shape[1])
+        for i in range(0,Xtrain.shape[0]):
+            temp=numpy.dot(w,Xtrain[i])
+            temp=temp+b
+            temp=float(numpy.exp(-1*temp))
+            temp=temp+1.0
+            temp=1.0/temp
+            temp=temp-float(ytrain[i])
+            sum_grad_bias=sum_grad_bias+temp
+            coeff=numpy.multiply(temp,Xtrain[i])
+            sum_grad_coeff=numpy.add(sum_grad_coeff,coeff)
+        avg_grad_bias=sum_grad_bias/float(Xtrain.shape[0])
+        avg_grad_coeff=numpy.divide(sum_grad_coeff,float(Xtrain.shape[0]))
+        b=b-(float(step_size)*avg_grad_bias)
+        coeff_update=numpy.multiply(float(step_size), avg_grad_coeff)
+        w=numpy.subtract(w,coeff_update)
     # you need to fill in your solution here
+    w_l=w
+    b_l=b
     
     return w_l, b_l
 
@@ -44,8 +68,14 @@ def logistic_test_ovr(Xtest, w_l, b_l):
     Returns:
     - a numpy array with num_test elements predicted probability , i.e. the output of your logistic function, of each testing data.
     """
-    # you need to fill in your solution here
-
+    test_pred=numpy.empty((Xtest.shape[0]),float)
+    for i in range(0,Xtest.shape[0]):
+        temp = numpy.dot(Xtest[i], w_l)
+        temp = temp+b_l
+        temp = numpy.exp(-1 * temp)
+        temp = temp + 1
+        temp = 1 / temp
+        test_pred[i]=temp
     return test_pred
 
 def logistic_mul_train(Xtrain, ytrain, w, b, step_size, max_iterations):
@@ -63,8 +93,18 @@ def logistic_mul_train(Xtrain, ytrain, w, b, step_size, max_iterations):
     - learnt w and b, denoted as w_l and b_l.
     '''
 
-    # you need to fill in your solution here
-    return w_l, b_l
+    ytrain_trans=numpy.transpose(ytrain)
+    
+    w_l=numpy.empty((ytrain.shape[1],Xtrain.shape[1]),float)
+    b_l=numpy.empty(ytrain.shape[1],float)
+    
+    
+    for i in range(0,ytrain.shape[1]):
+        x,y=logistic_train_ovr(Xtrain,ytrain_trans[i],w[i],b[i],step_size,max_iterations)
+        #print(x,y,i)
+        w_l[i]=x
+        b_l[i]=y
+    return w_l,b_l
 
 def logistic_mul_test(Xtest, w_l, b_l):
     """
@@ -78,7 +118,11 @@ def logistic_mul_test(Xtest, w_l, b_l):
     Returns:
     - test_pred: a N-by-C numpy array predicting 10-class probability of each testing data, i.e. the output of your logistic function.
     """
-    # you need to fill in your solution here
+    pred=numpy.empty((w_l.shape[0],Xtest.shape[0]),float)
+    for i in range(0,w_l.shape[0]):
+        temp1=logistic_test_ovr(Xtest,w_l[i],b_l[i])
+        pred[i]=temp1
+    test_pred=numpy.transpose(pred)
 
     return test_pred
 
@@ -173,7 +217,7 @@ def eval_multi_class(test_bin_prob, ytest):
     test_mul_pred = numpy.zeros(ytest.shape[0])
     for i in range(ytest.shape[0]):
         test_mul_pred[i] = numpy.argmax(test_bin_prob[i,:])
-    test_acc = float(sum(test_mul_pred != ytest)) / len(ytest)
+    test_acc = float(sum(test_mul_pred == ytest)) / len(ytest)
     return test_acc
 
 def ovr_logistic(Xtrain, ytrain, ytrain_mat, Xtest, ytest, ytest_mat, num_cls = 10):
@@ -199,7 +243,7 @@ def ovr_logistic(Xtrain, ytrain, ytrain_mat, Xtest, ytest, ytest_mat, num_cls = 
 def multinomial_logistic(Xtrain, ytrain, ytrain_mat, Xtest, ytest, ytest_mat, num_cls = 10):
     # training data
     m, n = numpy.array(Xtrain).shape
-    w = numpy.zeros((n, num_cls))
+    w = numpy.zeros((num_cls, n))
     b = numpy.zeros(num_cls)
     step_size = 0.01
     max_iterations = 200
@@ -217,7 +261,7 @@ if __name__ == "__main__":
     '''
     data loading
     '''
-    Xtrain, ytrain, ytrain_mat, _, _, _, Xtest, ytest, ytest_mat = data_loader_mnist(dataset = 'mnist\_subset.json', num_cls = num_cls)
+    Xtrain, ytrain, ytrain_mat, _, _, _, Xtest, ytest, ytest_mat = data_loader_mnist(dataset = 'mnist_subset.json', num_cls = num_cls)
     '''
     multi-class classification
     '''

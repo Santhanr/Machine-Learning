@@ -1,7 +1,6 @@
 """
 Do not change other parts than those marked by TODO.
 If our script cannot run your code or the format is improper, your code will not be graded.
-
 Search TODO for those parts you need to complete.
 Please follow the step indicated in TODO (step) to complete this script from step = 1 to step = 5.
 """
@@ -162,7 +161,9 @@ def main(main_params):
             ################################################################################
 
             # TODO (2)
-
+            a2_my = model['C2'].forward(m1)
+            h2_my = model['nonlinear2'].forward(a2_my)
+            m2 = model['M2'].forward(h2_my)
             ################################################################################
             #                            End of TODO (2)                                   #
             ################################################################################
@@ -190,7 +191,9 @@ def main(main_params):
             ################################################################################
 
             # TODO (3)
-
+            grad_h2_my = model['M2'].backward(h2_my, grad_m2)
+            grad_a2_my = model['nonlinear2'].backward(a2_my, grad_h2_my)
+            grad_m1 = model['C2'].backward(m1, grad_a2_my)
             ################################################################################
             #                            End of TODO (3)                                   #
             ################################################################################
@@ -235,7 +238,9 @@ def main(main_params):
             ################################################################################
 
             # TODO (4)
-
+            a2_my = model['C2'].forward(m1)
+            h2_my = model['nonlinear2'].forward(a2_my)
+            m2 = model['M2'].forward(h2_my)
             ################################################################################
             #                            End of TODO (4)                                   #
             ################################################################################
@@ -276,7 +281,9 @@ def main(main_params):
             ################################################################################
 
             # TODO (5)
-
+            a2_my = model['C2'].forward(m1)
+            h2_my = model['nonlinear2'].forward(a2_my)
+            m2 = model['M2'].forward(h2_my)
             ################################################################################
             #                            End of TODO (5)                                   #
             ################################################################################
