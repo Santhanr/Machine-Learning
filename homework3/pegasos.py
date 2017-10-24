@@ -15,8 +15,18 @@ def objective_function(X, y, w, lamb):
     - train_obj: the value of objective function in SVM primal formulation
     """
     # you need to fill in your solution here
-
-
+    tempo=np.dot(X,w)
+    tempo=np.multiply(y,tempo)
+    oneArray=np.ones(y.shape[0])
+    tempo=np.subtract(oneArray,tempo)
+    zeroArray=np.zeros(y.shape[0])
+    tempo=np.maximum(zeroArray,tempo)
+    ans=tempo.sum()
+    ans=ans/y.shape[0]
+    ans1=np.linalg.norm(w)
+    ans1=np.square(ans1)
+    ans1=ans1*lamb/2
+    obj_value=ans1-ans
     return obj_value
 
 
@@ -40,15 +50,41 @@ def pegasos_train(Xtrain, ytrain, w, lamb, k, max_iterations):
     ytrain = np.array(ytrain)
     N = Xtrain.shape[0]
     D = Xtrain.shape[1]
-
     train_obj = []
-
+    w=np.squeeze(w)
+    #print(w.shape)
     for iter in range(1, max_iterations + 1):
         A_t = np.floor(np.random.rand(k) * N).astype(int)  # index of the current mini-batch
-
-        # you need to fill in your solution here
-
-
+        A_tX = np.array([])
+        A_tY = np.array([])
+        for i in A_t:
+            X=np.array(Xtrain[i])
+            Y=ytrain[i]
+            temp=np.dot(X,w)
+            temp=np.dot(Y,temp)
+            if(temp<1):
+                A_tX=np.append(A_tX,X)
+                Ytemp=np.array(Y)
+                A_tY=np.append(A_tY,Ytemp)
+        eta=1/(lamb*iter)
+        coeff=eta*lamb
+        coeff=1-coeff
+        op1=np.multiply(coeff,w)
+        A_tX=np.reshape(A_tX,(A_tY.shape[0],w.shape[0]))   
+        wtemp=np.zeros(w.shape)
+        for i in range(0,A_tY.shape[0]):
+            wtemp=np.add(wtemp,np.multiply(A_tY[i],A_tX[i]))
+        wtemp=np.multiply(eta/k,wtemp)
+        wtemp=np.add(op1,wtemp)
+        scale_boo=1/(np.sqrt(lamb))
+        scale_boo=scale_boo/np.linalg.norm(wtemp)
+        if(scale_boo<1):
+            w=np.multiply(scale_boo,wtemp)
+        else:
+            w=wtemp
+        train_obj.append(objective_function(Xtrain, ytrain, w, lamb))
+        # you need to fill in your solution her
+              
     return w, train_obj
 
 
@@ -65,8 +101,16 @@ def pegasos_test(Xtest, ytest, w, t = 0.):
     - test_acc: testing accuracy.
     """
     # you need to fill in your solution here
-
-
+    temp=np.dot(Xtest,w)
+    count1=0
+    count2=0
+    
+    for i in range(0,temp.shape[0]):
+        if(temp[i]<t and ytest[i]==-1):
+            count1=count1+1
+        elif(temp[i]>t and ytest[i]==1):
+            count2=count2+1
+    test_acc=float(count1+count2)/float(len(ytest))
     return test_acc
 
 
