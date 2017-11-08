@@ -3,6 +3,9 @@ import random
 import numpy as np
 
 
+def getDistance(A,B):
+    return (((A[0]-B[0])**2) + ((A[1]-B[1])**2))**0.5
+
 def cluster_points(X, mu):
     """
     Distribute data points into clusters.
@@ -15,8 +18,17 @@ def cluster_points(X, mu):
     - clusters: A dict, keys are cluster index {1,2, ..., K} (int),
                 value are the list of corresponding data points.
     """
-
     clusters = {}
+    for i in range(1,len(mu)+1):
+        clusters[i]=[]
+    
+    for point in X:
+        dist=[]
+        for center in mu:
+            dist.append(getDistance(point,center))
+        val, idx = min((val, idx) for (idx, val) in enumerate(dist))
+        clusters[idx+1].append(point)
+    
 
     # you need to fill in your solution here
 
@@ -35,8 +47,19 @@ def reevaluate_centers(mu, clusters):
     Returns:
     - newmu: A list of K updated cluster centers, each elements is a list of 2
     """
+    
     newmu = []
-
+    for i in range(1,len(mu)+1):
+        points=clusters[i]
+        X=0
+        Y=0
+        for point in points:
+            X+=point[0]
+            Y+=point[1]
+        X=X/len(points)
+        Y=Y/len(points)
+        center=[X,Y]
+        newmu.append(center) 
     # you need to fill in your solution here
 
     return newmu

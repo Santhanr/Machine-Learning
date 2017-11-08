@@ -76,10 +76,41 @@ def nb_train_smoothing(X, Y, vocab_size, num_classes, alpha):
     """
     class_prob = np.zeros((num_classes, 1))
     class_word_prob = np.zeros((num_classes, vocab_size))
+    wordCountByClass=[]
+    for i in range(num_classes):
+        wordCountByClass.append(0)
+    
     ###################################################
     # Q8.2 Edit here
     ###################################################
-
+    classFreq = {}
+    for i in range(0,num_classes):
+        classFreq[i] = 0
+    for i in range(0,len(Y)):
+        classFreq[Y[i]]+=1
+    class_prob_list = []
+    for i in range(0,num_classes):
+        class_prob_list.append(((float)(classFreq[i])/(float)(len(Y))))
+    class_prob = np.array(class_prob_list)
+    classWord_probList = []
+    for i in range(num_classes):
+        classWord_probList.append([])
+        for j in range(vocab_size):
+            classWord_probList[i].append(alpha);
+    for i in range(0,len(X)):
+        templist = classWord_probList[Y[i]]
+        doc = X[i]
+        for j in range(0,len(doc)):
+            wordId = doc[j][0]
+            wordFreq = doc[j][1]
+            templist[wordId]+=wordFreq
+            wordCountByClass[Y[i]]+=wordFreq
+        classWord_probList[Y[i]] = templist
+    
+    for i in range(num_classes):
+        for j in range(vocab_size):
+            classWord_probList[i][j]=(float)(classWord_probList[i][j])/((float)(wordCountByClass[i])+(float)(alpha*vocab_size))
+    class_word_prob = np.array(classWord_probList)
     return class_prob, class_word_prob
 
 
@@ -100,10 +131,42 @@ def nb_train(X, Y, vocab_size, num_classes):
     """
     class_prob = np.zeros((num_classes, 1))
     class_word_prob = np.zeros((num_classes, vocab_size))
+    wordCountByClass=[]
+    for i in range(num_classes):
+        wordCountByClass.append(0)
     ###################################################
     # Q8.1 Edit here
     ###################################################
-
+    classFreq = {}
+    for i in range(0,num_classes):
+        classFreq[i] = 0
+    for i in range(0,len(Y)):
+        classFreq[Y[i]]+=1
+    class_prob_list = []
+    for i in range(0,num_classes):
+        class_prob_list.append((float)(classFreq[i])/(float)(len(Y)))
+    class_prob = np.array(class_prob_list)
+    classWord_probList = []
+    for i in range(num_classes):
+        classWord_probList.append([])
+        for j in range(vocab_size):
+            classWord_probList[i].append(0);
+    for i in range(0,len(X)):
+        templist = classWord_probList[Y[i]]
+        doc = X[i]
+        for j in range(0,len(doc)):
+            wordId = doc[j][0]
+            wordFreq = doc[j][1]
+            templist[wordId]+=wordFreq
+            wordCountByClass[Y[i]]+=wordFreq
+        classWord_probList[Y[i]] = templist
+    
+    
+    for i in range(num_classes):
+        for j in range(vocab_size):
+            classWord_probList[i][j]=(float)(classWord_probList[i][j])/(float)(wordCountByClass[i])
+    class_word_prob = np.array(classWord_probList)
+    class_prob=np.reshape(class_prob,(2,1))
     return class_prob, class_word_prob
 
 
@@ -126,9 +189,49 @@ def nb_predict(X, class_prob, class_word_prob):
     ###################################################
     # Q8.1 Edit here
     ###################################################
-
+    
+    for i in range(0,len(X)):
+        doc = X[i]
+        prob0 = np.log(class_prob[0])
+        prob1 = np.log(class_prob[1])
+        for j in range(0,len(doc)):
+            wordId = doc[j][0]
+            wordFreq = doc[j][1]
+            if class_word_prob[0][wordId] == 0 and class_word_prob[1][wordId] == 0:
+                continue
+            if class_word_prob[0][wordId] == 0:
+                prob0+=(-1e50)*(float)(wordFreq)
+            elif class_word_prob[0][wordId] != 0:
+                prob0+= (float)(wordFreq) * np.log(class_word_prob[0][wordId])
+            if class_word_prob[1][wordId] == 0:
+                prob1+=(-1e50)*(float)(wordFreq)
+            elif class_word_prob[1][wordId] !=0:
+                prob1+= (float)(wordFreq) * np.log(class_word_prob[1][wordId])
+        if(prob0 > prob1):
+            Ypred.append(0)
+        elif prob0 <= prob1:
+            Ypred.append(1)
     return Ypred
-
+    '''
+    for doc in X:
+        classification = [-1e50, -1e50]
+        for c in range(2):
+            log_sum = np.log(class_prob[c, 0])
+            for x in doc:
+                if class_word_prob[0, x[0]] == 0 and class_word_prob[1, x[0]] == 0:
+                    continue
+                elif not class_word_prob[c, x[0]]:
+                    log_sum += x[1] * -1e50
+                else:
+                    log_sum += x[1] * np.log(class_word_prob[c, x[0]])
+            classification[c] = log_sum
+        
+        if classification[1]>=classification[0]:
+            Ypred.append(1)
+        else:
+            Ypred.append(0)
+    return Ypred
+    '''
 
 def compute_acc(Ypred, Ytrue):
     """Computes the accuracy given predicted and ground-truth labels.
