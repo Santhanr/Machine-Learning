@@ -212,26 +212,7 @@ def nb_predict(X, class_prob, class_word_prob):
         elif prob0 <= prob1:
             Ypred.append(1)
     return Ypred
-    '''
-    for doc in X:
-        classification = [-1e50, -1e50]
-        for c in range(2):
-            log_sum = np.log(class_prob[c, 0])
-            for x in doc:
-                if class_word_prob[0, x[0]] == 0 and class_word_prob[1, x[0]] == 0:
-                    continue
-                elif not class_word_prob[c, x[0]]:
-                    log_sum += x[1] * -1e50
-                else:
-                    log_sum += x[1] * np.log(class_word_prob[c, x[0]])
-            classification[c] = log_sum
-        
-        if classification[1]>=classification[0]:
-            Ypred.append(1)
-        else:
-            Ypred.append(0)
-    return Ypred
-    '''
+   
 
 def compute_acc(Ypred, Ytrue):
     """Computes the accuracy given predicted and ground-truth labels.
