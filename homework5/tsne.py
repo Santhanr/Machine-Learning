@@ -25,7 +25,19 @@ def pca(X = np.array([]), initial_dims = 50):
     Y = np.zeros((X.shape[0],initial_dims))
     
     # start your code here
-
+    X=X-np.mean(X, axis=0)
+    cov = np.cov(X.T)
+    eVal,eVec = np.linalg.eig(cov)
+    ePairs = [(np.abs(eVal[i]), eVec[:,i]) for i in range(len(eVal))]
+    ePairs.sort(key=lambda tup: tup[0])
+    ePairs.reverse()
+    
+    
+    W=ePairs[0][1].reshape(X.shape[1],1)
+    for i in range(1,50):
+        W=np.hstack((W,ePairs[i][1].reshape(X.shape[1],1)))
+    Y=np.dot(X,W)
+    print Y
     return Y
 
 
@@ -43,10 +55,19 @@ def compute_Q(Y):
     - Y_sim: An array with the same shape with Q. Y_sim[i][j] is the nominator of Q[i][j] 
          in equation *.
     """
+    
     Y_sim = np.zeros((Y.shape[0],Y.shape[0]))
     Q = np.zeros((Y.shape[0],Y.shape[0]))
     
     # start your code here
+    sq=np.square(Y)
+    temp = np.sum(sq, 1)
+    temp1 = np.multiply(-2,np.dot(Y,np.transpose(Y)))
+    temp2 = np.add(temp1,temp)
+    temp2 = np.add(temp,np.transpose(temp2))
+    Y_sim=1/(1+temp2)
+    Y_sim[range(Y.shape[0]), range(Y.shape[0])] = 0
+    Q = Y_sim / np.sum(Y_sim);
     
     return Q, Y_sim
 
@@ -71,8 +92,15 @@ def compute_gradient(P, Q, Y_sim, Y, dY, no_dims):
     """
     
     dY = np.zeros(Y.shape)
-    # start your code here
     
+    # start your code here
+    diffPQ = P - Q;
+    for i in range(Y.shape[0]):
+		temp = np.multiply(diffPQ[:,i],Y_sim[:,i])
+		temp = np.tile(temp,(no_dims,1))
+		temp2 = np.subtract(Y[i,:],Y)
+		temp = np.multiply(np.transpose(temp),temp2)
+		dY[i,:]=np.sum(temp,0)
     return dY
 
 
